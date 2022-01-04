@@ -10,15 +10,16 @@ function convertToCSV(arr) {
      }).join('\n')
 }
 
-
 const stackoverflow = new Crawler({
-     maxConnections: 10,
+     maxConnections: 5,
      callback: function (error, result, done) {   // asynchronous execution
           var $ = result.$;
           var jsonArray = [];
 
           $('.question-summary').each(function (index) {
                var jsonOutput = {};
+               // I may have to 
+               // jsonOutput = [];
 
                jsonOutput.questionLink = "https://stackoverflow.com"+$(this).find(".summary").find("a").attr("href");
                jsonOutput.upvotes = $(this).find(".votes").find("strong").text();
@@ -32,14 +33,13 @@ const stackoverflow = new Crawler({
                i += 1;
                // console.log(i);
                var url = "https://stackoverflow.com/questions?tab=votes&page=" + i;
-               stackoverflow.queue(url)
+               stackoverflow.queue(url);
           }
 
-          fs.appendFile('stackoverflow.csv', convertToCSV(jsonArray), function (err) {
+          fs.appendFile('stackoverflow.txt', JSON.stringify(jsonArray) + ",", function (err) {
+          // fs.appendFile('stackoverflow.txt', convertToCSV(jsonArray), function (err) {
                if (err) throw err;
           });
-
-
      }
 });
 
