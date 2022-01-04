@@ -1,7 +1,6 @@
 const Crawler = require("crawler");
 const url = require('url');
 const fs = require('fs');
-const csvwriter = require('csv-writer');
 
 function convertToCSV(arr) {
      const array = [Object.keys(arr[0])].concat(arr)
@@ -21,7 +20,7 @@ const stackoverflow = new Crawler({
           $('.question-summary').each(function (index) {
                var jsonOutput = {};
 
-               jsonOutput.questionLink = "https://stackoverflow.com" + $(this).find(".summary").find("a").attr("href");
+               jsonOutput.questionLink = "https://stackoverflow.com"+$(this).find(".summary").find("a").attr("href");
                jsonOutput.upvotes = $(this).find(".votes").find("strong").text();
                jsonOutput.answers = $(this).find(".status").find("strong").text();
 
@@ -37,7 +36,6 @@ const stackoverflow = new Crawler({
           }
 
           fs.appendFile('stackoverflow.csv', convertToCSV(jsonArray), function (err) {
-          // fs.appendFile('stackoverflow.txt', JSON.stringify(jsonArray), function (err) {
                if (err) throw err;
           });
 
@@ -46,4 +44,6 @@ const stackoverflow = new Crawler({
 });
 
 // stackoverflow.queue('https://stackoverflow.com/questions/')
-stackoverflow.queue("https://stackoverflow.com/questions?tab=votes")
+// stackoverflow.queue("https://stackoverflow.com/questions?tab=votes")
+
+module.exports = stackoverflow;
