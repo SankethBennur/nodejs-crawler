@@ -1,50 +1,60 @@
-const Crawler = require("crawler");
-const url = require('url');
-const fs = require('fs');
-// var jsonArray = [];
+const express = require('express');
+const router= express.Router();
+const axios = require('axios');
+const cheerio = require('cheerio');
+const { json } = require('express/lib/response');
+// const controller = require('./controller.js');
 
-function convertToCSV(arr) {
-     const array = [Object.keys(arr[0])].concat(arr)
 
-     return array.map(it => {
-          return Object.values(it).toString()
-     }).join('\n')
+async function stackoverflow() {
+     let jsonArray = [];
+     try {
+          const siteUrl = "https://stackoverflow.com/questions?tab=votes";
+          const { data } = await axios({
+               method: 'GET',
+               url: siteUrl,
+          });
+          const $ = cheerio.load(data);
+          
+          // [may require a while loop if element doesn't exist. Stops recursion.]
+          const elemSelector = $('.question-summary');
+          // gets list of elements with class=question-summary
+
+          $(elemSelector).each(function (parentIdx, parentElem) {
+               var jsonObj = {};
+               
+               // [temporary]
+               jsonObj.index = parentIdx;
+               // jsonOutput.questionLink = "https://stackoverflow.com"+$(this).find(".summary").find("a").attr("href");
+               jsonObj.questionLink = "https://stackoverflow.com"+$(parentElem).find(".summary").find("a").attr("href");
+               jsonObj.upvotes = $(parentElem).find(".votes").find("strong").text();
+               jsonObj.answers = $(parentElem).find(".status").find("strong").text();
+               
+               jsonArray.push(jsonObj);
+          });
+          
+     }
+     catch (error) {
+          console.log(error);
+     }
+
+     return(jsonArray);
+     // send a response with express
+     // console.log(jsonArray);
+
 }
 
-const stackoverflow = new Crawler({
-     maxConnections: 5,
-     callback: function (error, result, done) {   // asynchronous execution
-          var $ = result.$;
-          var jsonArray = [];
 
-          $('.question-summary').each(function (index) {
-               var jsonOutput = {};
+router.get('/fetch', async function(req, res){
+     try{
+          const result = await stackoverflow();
 
-               jsonOutput.questionLink = "https://stackoverflow.com"+$(this).find(".summary").find("a").attr("href");
-               jsonOutput.upvotes = $(this).find(".votes").find("strong").text();
-               jsonOutput.answers = $(this).find(".status").find("strong").text();
-
-               jsonArray.push(jsonOutput);
-          });
-
-          var i = 2
-          while (i) {
-               i += 1;
-               console.log(i);
-               var url = "https://stackoverflow.com/questions?tab=votes&page=" + i;
-               stackoverflow.queue(url);
-          }
-
-          // fs.appendFile('stackoverflow2.txt', JSON.stringify(jsonArray) + ",", function (err) {
-          fs.appendFile('stackoverflow.txt', convertToCSV(jsonArray), function (err) {
-               if (err) throw err;
-          });
-
-          // done();
+          res.status(201).json({result});
+     }
+     catch(error){
+          res.status(403).json({error: error.toString()});
      }
 });
 
-// stackoverflow.queue('https://stackoverflow.com/questions/')
-// stackoverflow.queue("https://stackoverflow.com/questions?tab=votes")
 
-module.exports = stackoverflow;
+module.exports = router;
