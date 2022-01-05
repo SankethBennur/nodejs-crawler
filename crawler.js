@@ -2,6 +2,7 @@ const express = require('express');
 const router= express.Router();
 const fs = require('fs');
 const axios = require('axios');
+const Question = require('./schema/schema.questions');
 const cheerio = require('cheerio');
 const { json } = require('express/lib/response');
 
@@ -57,6 +58,18 @@ async function stackoverflow(url) {
 
 // function to find a match of question url in the array of jsonObj
 async function append(jsonObj){
+     // save to mongodb atlas
+     const newQuestion = new Question({
+          question: jsonObj.questionLink,
+          count: jsonObj.count,
+          upvotes: jsonObj.upvotes,
+          answers: jsonObj.answers
+     });
+
+     newQuestion.save()
+          .then()
+          .catch();
+
      // fetch match from jsonArray (initially empty)
      var match = jsonArray.filter(obj => {
           return obj.questionLink === jsonObj.questionLink;
@@ -89,10 +102,9 @@ async function convertToCSV(array){
 
 // RECURSION
 async function exec(url){
-     pageNo = 441710
+     pageNo = 1
      while(true){
           await stackoverflow(url.concat("&page=", pageNo));  // infinite recursion. will stop when $(elemSelector) is not found.
-          // last page of entire stackoverflow is somewhere at 441712.
           pageNo += 1;
      }
 }
