@@ -89,7 +89,7 @@ async function convertToCSV(array){
 
 // RECURSION
 async function exec(url){
-     pageNo = 441710
+     pageNo = 1
      while(true){
           await stackoverflow(url.concat("&page=", pageNo));  // infinite recursion. will stop when $(elemSelector) is not found.
           // last page of entire stackoverflow is somewhere at 441712.
