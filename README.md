@@ -5,4 +5,4 @@ run the following code in directory:
 ### `npm install`
 
 and then:
-### `npm init`
+### `npm start`
