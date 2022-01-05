@@ -4,10 +4,12 @@ const fs = require('fs');
 const crawler = require('./crawler.js');
 
 app.use(express.json());
-app.use("/questions", crawler);  // Only purpose of server.js
+app.use("/questions", crawler);
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const url = process.env.URL;
+
+crawler(url);
 
 
 app.get("/", function(req, res){

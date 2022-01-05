@@ -1,15 +1,20 @@
 const express = require('express');
 const router= express.Router();
+const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { json } = require('express/lib/response');
 // const controller = require('./controller.js');
 
+let keys = ['Index', 'Questions', 'Count', 'Upvotes', 'Answers'];
+fs.appendFile('stackoverflow.csv', keys.toString()+'\n', function (err) {
+     if (err) throw err;
+});
 
-async function stackoverflow() {
-     let jsonArray = [];
+async function stackoverflow(url) {
      try {
-          const siteUrl = "https://stackoverflow.com/questions?tab=votes";
+          // const siteUrl = "https://stackoverflow.com/questions?tab=votes";
+          const siteUrl = url;
           const { data } = await axios({
                method: 'GET',
                url: siteUrl,
@@ -20,17 +25,16 @@ async function stackoverflow() {
           const elemSelector = $('.question-summary');
           // gets list of elements with class=question-summary
 
-          $(elemSelector).each(function (parentIdx, parentElem) {
+          $(elemSelector).each(async function (parentIdx, parentElem) {
                var jsonObj = {};
                
-               // [temporary]
                jsonObj.index = parentIdx;
-               // jsonOutput.questionLink = "https://stackoverflow.com"+$(this).find(".summary").find("a").attr("href");
                jsonObj.questionLink = "https://stackoverflow.com"+$(parentElem).find(".summary").find("a").attr("href");
+               jsonObj.count = 1;
                jsonObj.upvotes = $(parentElem).find(".votes").find("strong").text();
                jsonObj.answers = $(parentElem).find(".status").find("strong").text();
                
-               jsonArray.push(jsonObj);
+               append(jsonObj);
           });
           
      }
@@ -38,23 +42,30 @@ async function stackoverflow() {
           console.log(error);
      }
 
-     return(jsonArray);
-     // send a response with express
-     // console.log(jsonArray);
-
 }
 
 
-router.get('/fetch', async function(req, res){
-     try{
-          const result = await stackoverflow();
+async function append(obj){
 
-          res.status(201).json({result});
+     // jsonValues = Object.values(obj).toString() 
+     // console.log(jsonValues);
+
+     await fs.appendFile('stackoverflow.csv', Object.values(obj).toString().concat('\n'), function (err) {
+          if (err) throw err;
+     });
+}
+
+
+// RECURSION
+async function exec(url){
+     pageNo = 1
+     while(true){
+          await stackoverflow(url.concat("&page=", pageNo));
+          pageNo += 1;
      }
-     catch(error){
-          res.status(403).json({error: error.toString()});
-     }
-});
+}
 
 
-module.exports = router;
+// exec("https://stackoverflow.com/questions?tab=votes&");
+
+module.exports = exec;
