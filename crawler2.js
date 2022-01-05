@@ -5,11 +5,12 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { json } = require('express/lib/response');
 // const controller = require('./controller.js');
-
+let jsonArray = [];
 let keys = ['Questions', 'Count', 'Upvotes', 'Answers'];
-fs.appendFile('stackoverflow.csv', keys.toString()+'\n', function (err) {
+fs.writeFile('stackoverflow.csv', keys.toString()+'\n', function (err) {
      if (err) throw err;
 });
+
 
 async function stackoverflow(url) {
      try {
@@ -33,7 +34,7 @@ async function stackoverflow(url) {
                jsonObj.upvotes = $(parentElem).find(".votes").find("strong").text();
                jsonObj.answers = $(parentElem).find(".status").find("strong").text();
                
-               append(jsonObj);
+               await append(jsonObj);
           });
           
      }
@@ -44,16 +45,40 @@ async function stackoverflow(url) {
 }
 
 
-async function append(obj){
-
-     // jsonValues = Object.values(obj).toString() 
-     // console.log(jsonValues);
-
-     await fs.appendFile('stackoverflow.csv', Object.values(obj).toString().concat('\n'), function (err) {
-          if (err) throw err;
+async function append(jsonObj){
+     // fetch match from jsonArray (initially empty)
+     var match = jsonArray.filter(obj => {
+          return obj.questionLink === jsonObj.questionLink;
      });
+
+     // if match[0] is valid
+          // match[0].count++;
+     if(match[0]) match[0].count++;  // manipulation
+     // else
+          // jsonArray = jsonArray.concat(jsonObj);
+     else jsonArray = jsonArray.concat(jsonObj);
+     
+     // send to csvfile
+     convertToCSV(jsonArray);
 }
 
+async function convertToCSV(array){
+     // get array string from parameter
+     arr = array.map(it => {
+          return Object.values(it).toString()
+     }).join('\n')
+
+     // write csv headings
+     await fs.writeFile('stackoverflow.csv', keys.toString()+'\n'+arr, function (err) {
+          if (err) throw err;
+     });
+
+     // // append entirely new array to the same file
+     // await fs.appendFile('stackoverflow.csv', arr, function (err) {
+     //      if (err) throw err;
+     // });
+
+}
 
 // RECURSION
 async function exec(url){
@@ -64,7 +89,6 @@ async function exec(url){
      }
 }
 
+exec("https://stackoverflow.com/questions?tab=votes&");
 
-// exec("https://stackoverflow.com/questions?tab=votes&");
-
-module.exports = exec;
+// module.exports = exec;
