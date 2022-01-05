@@ -6,9 +6,12 @@ const crawler = require('./crawler.js');
 app.use(express.json());
 app.use("/questions", crawler);
 require('dotenv').config();
-const port = process.env.PORT || 5000;
-const url = process.env.URL;
 
+// fetch port and url environment variables
+const port = process.env.PORT || 5000;
+const url = process.env.URL || "https://stackoverflow.com/questions?tab=votes&" ;
+
+// call crawler function with given url
 crawler(url);
 
 
