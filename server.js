@@ -12,7 +12,16 @@ require('dotenv').config();
 const port = process.env.PORT || 5000;
 const url = process.env.URL || "https://stackoverflow.com/questions?tab=votes&" ;
 
-mongoose.connect(process.env.MONGODB_URL)
+// mongoose.connect(process.env.MONGODB_URL)
+//      .then(function(){
+//           console.log('Connection to MongoDB Successful!');
+//      })
+//      .catch(function(){
+//           console.log('Connection Unsuccessful.')
+//      }
+// );
+
+mongoose.connect('mongodb://localhost/stackoverflow')  // connect to stackoverflow
      .then(function(){
           console.log('Connection to MongoDB Successful!');
      })
@@ -20,6 +29,7 @@ mongoose.connect(process.env.MONGODB_URL)
           console.log('Connection Unsuccessful.')
      }
 );
+
 
 // call crawler function with given url
 crawler(url);
